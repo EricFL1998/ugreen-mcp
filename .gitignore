@@ -1,0 +1,19 @@
+﻿# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+ugreen-nas-mcp-linux-amd64
+
+# Test & Temp files
+*.tmp
+*.log
+probe_result.json
+__pycache__/
+*.pyc
+
+# OS generated
+.DS_Store
+Thumbs.db
+
