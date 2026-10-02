@@ -1,25 +1,43 @@
 # 绿联 NAS (UGOS Pro) 专属 MCP 服务端 (ugreen-nas-mcp)
 
-一套专为绿联 NAS (UGOS Pro) 打造的标准 Model Context Protocol (MCP) 服务端。  
+一套专为绿联 NAS (UGOS Pro) 打造的标准 Model Context Protocol (MCP) 服务端。
 让大模型（Claude、ChatGPT、Cursor、Codex 等）能够安全、受控、深度、全方位地管理 NAS 硬件健康、存储阵列、Docker 容器与全域 44 个官方原生应用。
 
-> ������ **核心设计哲学**：**日常完全免开 SSH 终端**。  
+> 核心设计哲学：日常完全免开 SSH 终端。
 > 仅需在初始部署时使用一次 SSH 进行安装，之后服务作为 systemd 守护进程常驻后台并开机自启。你只需在 AI 客户端中与大模型自然语言对话，即可完成全盘管理与智能运维。
 
 ---
 
 ## 目录
 
-- [✨ 核心功能亮点](#-核心功能亮点)
-- [������️ 安全防护与二阶段确认机制](#️-安全防护与二阶段确认机制)
-- [������ 快速安装指南](#-快速安装指南)
-- [������ 客户端接入配置 (Cursor / Claude / VS Code)](#-客户端接入配置)
-- [������ 常用自然语言操控范例](#-常用自然语言操控范例)
-- [������️ 核心 Tools 清单概览](#️-核心-tools-清单概览)
+- [一行命令快速安装 (推荐)](#-一行命令快速安装-推荐)
+- [核心功能亮点](#-核心功能亮点)
+- [安全防护与二阶段确认机制](#-安全防护与二阶段确认机制)
+- [客户端接入配置 (Cursor / Claude / VS Code)](#-客户端接入配置)
+- [常用自然语言操控范例](#-常用自然语言操控范例)
+- [核心 Tools 清单概览](#-核心-tools-清单概览)
+- [手动分步安装指南 (备选)](#-手动分步安装指南-备选)
 
 ---
 
-## ✨ 核心功能亮点
+## 一行命令快速安装 (推荐)
+
+在绿联 NAS 终端中直接粘贴执行以下**一行命令**，全自动完成下载、配置、注册开机自启并现场生成专属 Key：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/EricFL1998/ugreen-mcp/main/install.sh | sudo bash
+```
+
+> 提示：国内网络备用加速（如无法直连 GitHub）：
+> ```bash
+> curl -fsSL https://ghproxy.net/https://raw.githubusercontent.com/EricFL1998/ugreen-mcp/main/install.sh | sudo bash
+> ```
+
+安装完成后，终端会**当场自动打印出专属于你的客户端注册 JSON 配置**（包含自动探测到的 NAS 局域网 IP 与现场生成的加密 Key）。之后直接退出终端，日常管理完全免开 SSH！
+
+---
+
+## 核心功能亮点
 
 1. **日常彻底告别终端黑窗口**：
    - 服务基于轻量 Go 静态编译为单二进制文件（无外部运行依赖，内存占用仅约 2.3MB）。
@@ -37,12 +55,12 @@
 4. **生产级 Docker 容器集群运维**：
    - 深度兼容已运行的 15+ 容器（MoviePilot、Emby、HomeAssistant、qBittorrent 等）。
    - 查看健康状态、端口映射、实时提取 Tail 排错日志。
-5. **“适配应用”动态自省扩展引擎 (`nas_ugos_adapt_app`)**：
+5. **“适配应用”动态自省扩展引擎 (nas_ugos_adapt_app)**：
    - 后续在 NAS 上安装任意新套件或新容器，只需对大模型说一句“帮我适配一下刚装的应用”，服务会自动完成自省探测并在当前会话中**现场动态生成专属 Tool 集**，协议热重载，无需重启后台服务！
 
 ---
 
-## ������️ 安全防护与二阶段确认机制
+## 安全防护与二阶段确认机制
 
 为避免大模型由于幻觉或误触引发不可逆灾难，本服务构建了三道严格的安全防线：
 
@@ -50,70 +68,14 @@
    - 服务安装时通过安全密码学随机算法现场动态生成专属 Token，杜绝弱口令与硬编码。
 2. **二阶段高危拦截确认协议 (Two-Phase Confirmation)**：
    - 涉及永久删除文件、重启生产容器、重启核心套件等操作被标记为 **L3 级高危动作**。
-   - 首次调用强制拦截，生成短效 60 秒 SHA256 票据（`confirm_token`），并返回不可逆影响评估。
-   - 只有大模型向用户展示警告，用户在聊天中明确回复“确认”后，模型携带票据再次发起，系统才会真正执行，并记录到本地审计日志（`/var/log/ugreen-nas-mcp/audit.log`）。
+   - 首次调用强制拦截，生成短效 60 秒 SHA256 票据 (confirm_token)，并返回不可逆影响评估。
+   - 只有大模型向用户展示警告，用户在聊天中明确回复“确认”后，模型携带票据再次发起，系统才会真正执行，并记录到本地审计日志 (/var/log/ugreen-nas-mcp/audit.log)。
 3. **数据卷白名单沙箱**：
-   - 文件操作严格锁定在用户数据存储卷范围（如 `/volume1/`），强制屏蔽底座私有目录（如 `@appstore` 内部配置）以及系统根目录（`/etc`、`/proc` 等）。
+   - 文件操作严格锁定在用户数据存储卷范围（如 /volume1/），强制屏蔽底座私有目录（如 @appstore 内部配置）以及系统根目录（/etc、/proc 等）。
 
 ---
 
-## ������ 快速安装指南
-
-### 1. 编译二进制文件
-在本地 Go 环境（需 Go 1.22+）下交叉编译为 Linux x86_64 静态二进制：
-```bash
-cd server
-CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags="-s -w" -o ../ugreen-nas-mcp-linux-amd64 .
-```
-
-### 2. 上传至 NAS 并注册开机自启 (仅需执行一次 SSH)
-将生成的二进制文件传输到 NAS，并配置为 systemd 守护进程：
-```bash
-# 1. 传输到 NAS 临时目录
-scp ugreen-nas-mcp-linux-amd64 <user>@<nas_ip>:/tmp/ugreen-nas-mcp
-
-# 2. 登录 NAS 注册服务
-ssh <user>@<nas_ip>
-sudo chmod +x /tmp/ugreen-nas-mcp
-sudo mv /tmp/ugreen-nas-mcp /usr/local/bin/ugreen-nas-mcp
-sudo mkdir -p /etc/ugreen-nas-mcp /var/log/ugreen-nas-mcp
-
-# 3. 创建 systemd 服务文件
-sudo bash -c 'cat > /etc/systemd/system/ugreen-nas-mcp.service << "EOF"
-[Unit]
-Description=UGREEN NAS MCP Server (UGOS Pro)
-After=network.target docker.service
-Wants=docker.service
-
-[Service]
-Type=simple
-User=root
-UnsetEnvironment=GODEBUG
-Environment="GODEBUG="
-ExecStart=/usr/local/bin/ugreen-nas-mcp --port 8095
-Restart=always
-RestartSec=5s
-LimitNOFILE=65535
-
-[Install]
-WantedBy=multi-user.target
-EOF'
-
-# 4. 启动并启用开机自启
-sudo systemctl daemon-reload
-sudo systemctl enable --now ugreen-nas-mcp.service
-```
-
-### 3. 获取你的专属 Authorization Key
-服务启动后，自动生成了加密 Key。执行以下命令即可打印出你的客户端配置块：
-```bash
-/usr/local/bin/ugreen-nas-mcp --show-key
-```
-终端将输出专属于你的 Authorization Key（例如：`ugreen_mcp_xxxxxxxxxxxxxx`）。到此为止，**你可以彻底关闭并退出 SSH 终端了**！
-
----
-
-## ������ 客户端接入配置
+## 客户端接入配置
 
 将服务端生成的配置填入你常用的大模型客户端：
 
@@ -152,7 +114,7 @@ sudo systemctl enable --now ugreen-nas-mcp.service
 
 ---
 
-## ������ 常用自然语言操控范例
+## 常用自然语言操控范例
 
 接入完成后，直接在对话框中和大模型对话：
 
@@ -165,15 +127,15 @@ sudo systemctl enable --now ugreen-nas-mcp.service
 - **影视与海报刮削**：
   > “刚下载了新电影，帮我触发一次影视中心 TMDB 智能刮削；另外有部电影识别错了，帮我重刮为流浪地球2。”
 - **动态应用适配 (自省扩展)**：
-  > “我刚安装了一个新应用 `com.ugreen.xunlei`，帮我现场适配它。”  
-  > *（模型将调用 `nas_ugos_adapt_app`，现场探测并动态生成专属 Tool 集，无需重启服务）*
+  > “我刚安装了一个新应用 com.ugreen.xunlei，帮我现场适配它。”
+  > （模型将调用 nas_ugos_adapt_app，现场探测并动态生成专属 Tool 集，无需重启服务）
 - **高危安全确认**：
-  > “帮我重启一下 MoviePilot 容器。”  
-  > *（大模型会弹出拦截警告并展示断流风险，确认继续后才会安全执行，并记录到本地审计日志）*
+  > “帮我重启一下 MoviePilot 容器。”
+  > （大模型会弹出拦截警告并展示断流风险，确认继续后才会安全执行，并记录到本地审计日志）
 
 ---
 
-## ������️ 核心 Tools 清单概览
+## 核心 Tools 清单概览
 
 | 模块分类 | MCP Tool 名称 | 安全等级 | 功能概述 |
 | :--- | :--- | :--- | :--- |
@@ -183,7 +145,7 @@ sudo systemctl enable --now ugreen-nas-mcp.service
 | | `nas_video_get_unmatched_files`| L1 (Safe) | 筛选出未刮削成功的文件列表，智能分析命名格式 |
 | **应用中心** | `nas_appstore_search_online`| L1 (Safe) | 在绿联官方市场检索所有可用应用与安装信息 |
 | | `nas_ugos_list_apps` | L1 (Safe) | 一览全系统 44 个官方套件的运行状态与资源消耗 |
-| | `nas_ugos_get_app_config` | L1 (Safe) | 读取任意自带套件的底层 `config.json` 业务配置 |
+| | `nas_ugos_get_app_config` | L1 (Safe) | 读取任意自带套件的底层 config.json 业务配置 |
 | | `nas_ugos_update_app_config` | **L3 (High)** | **【强制二阶段确认】** 调节套件核心业务参数 |
 | | `nas_ugos_restart_app` | **L3 (High)** | **【强制二阶段确认】** 平滑重启官方核心套件自愈故障 |
 | | `nas_ugos_adapt_app` | L1 (Safe) | **【动态自省扩展】** 现场自省新应用并动态生成专属 Tool 集 |
@@ -195,7 +157,7 @@ sudo systemctl enable --now ugreen-nas-mcp.service
 | **Docker容器**| `nas_docker_list_containers` | L1 (Safe) | 监控当前 15+ 容器的运行状况、端口及健康检查 |
 | | `nas_docker_get_logs` | L1 (Safe) | 调取容器 Tail 近期日志排查报错故障 |
 | | `nas_docker_restart_container`| **L3 (High)** | **【强制二阶段确认】** 平滑安全重启指定 Docker 容器 |
-| **文件与系统**| `nas_file_list` / `search` | L1 (Safe) | 浏览与检索 `/volume1` 共享媒体及数据目录（带沙箱隔离） |
+| **文件与系统**| `nas_file_list` / `search` | L1 (Safe) | 浏览与检索 /volume1 共享媒体及数据目录（带沙箱隔离） |
 | | `nas_file_preview` | L1 (Safe) | 预览文件头部内容（默认 100 行） |
 | | `nas_file_delete` | **L3 (High)** | **【强制二阶段确认】** 永久删除指定数据文件 |
 | | `nas_system_get_overview` | L1 (Safe) | 整机型号、CPU/内存/Swap 负载与开机时间大盘 |
@@ -204,6 +166,28 @@ sudo systemctl enable --now ugreen-nas-mcp.service
 
 ---
 
-## ������ 许可证
+## 手动分步安装指南 (备选)
+
+如果需要手动分步编译或安装，可参考以下步骤：
+
+### 1. 编译二进制文件
+```bash
+cd server
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags="-s -w" -o ../ugreen-nas-mcp-linux-amd64 .
+```
+
+### 2. 部署到 NAS
+```bash
+scp ugreen-nas-mcp-linux-amd64 <user>@<nas_ip>:/tmp/ugreen-nas-mcp
+ssh <user>@<nas_ip>
+sudo chmod +x /tmp/ugreen-nas-mcp
+sudo mv /tmp/ugreen-nas-mcp /usr/local/bin/ugreen-nas-mcp
+sudo systemctl enable --now ugreen-nas-mcp.service
+/usr/local/bin/ugreen-nas-mcp --show-key
+```
+
+---
+
+## 许可证
 
 本项目基于 [MIT License](LICENSE) 开源发布。
