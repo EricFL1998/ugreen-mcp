@@ -40,7 +40,8 @@ func main() {
 	fmt.Println("================================================================================")
 	fmt.Println("       UGREEN NAS (UGOS Pro) MCP 服务已启动就绪 (开机自启守护进程)")
 	fmt.Println("================================================================================")
-	fmt.Printf(" [MCP 端点地址] : http://%s:%d/sse\n", cfg.Host, cfg.Port)
+	fmt.Printf(" [Streamable HTTP 端点] : http://%s:%d/mcp  (新版 MCP 客户端，推荐)\n", cfg.Host, cfg.Port)
+	fmt.Printf(" [旧版 SSE 端点]        : http://%s:%d/sse\n", cfg.Host, cfg.Port)
 	fmt.Println(" --------------------------------------------------------------------------------")
 	if isNew {
 		fmt.Println(" [全新动态生成的 Authorization Key (注册凭证)]:")
@@ -50,7 +51,7 @@ func main() {
 	fmt.Printf("    Bearer %s\n", cfg.AuthToken)
 	fmt.Println(" --------------------------------------------------------------------------------")
 	fmt.Println(" [MCP 客户端注册配置 (Cursor / Claude Desktop / VS Code)]:")
-	jsonSample := fmt.Sprintf("{\n  \"mcpServers\": {\n    \"ugreen-nas\": {\n      \"url\": \"http://<nas_ip>:%d/sse\",\n      \"headers\": {\n        \"Authorization\": \"Bearer %s\"\n      }\n    }\n  }\n}", cfg.Port, cfg.AuthToken)
+	jsonSample := fmt.Sprintf("{\n  \"mcpServers\": {\n    \"ugreen-nas\": {\n      \"url\": \"http://<nas_ip>:%d/mcp\",\n      \"headers\": {\n        \"Authorization\": \"Bearer %s\"\n      }\n    }\n  }\n}", cfg.Port, cfg.AuthToken)
 	fmt.Println(jsonSample)
 	fmt.Println("================================================================================")
 
@@ -69,6 +70,7 @@ func main() {
 
 	// 3. 注册 HTTP 路由
 	mux := http.NewServeMux()
+	mux.HandleFunc("/mcp", sseServer.AuthMiddleware(sseServer.HandleStreamableHTTP))
 	mux.HandleFunc("/sse", sseServer.AuthMiddleware(sseServer.HandleSSE))
 	mux.HandleFunc("/message", sseServer.AuthMiddleware(sseServer.HandleMessage))
 

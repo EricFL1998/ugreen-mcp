@@ -7,7 +7,7 @@
 ## 1. 架构与接入总览
 
 - **NAS 服务端信息**：
-  - **局域网访问地址**：`http://<nas_ip>:8095/sse`
+  - **局域网访问地址**：`http://<nas_ip>:8095/mcp`
   - **默认鉴权 Token**：`ugreen_mcp_<your_generated_key>`
   - **通信协议**：MCP (Model Context Protocol) 2024-11-05 标准 Server-Sent Events (SSE)
   - **宿主环境**：systemd 守护进程常驻（开机自启，内存占用约 2.3MB，崩溃秒级拉起）
@@ -28,7 +28,7 @@
 3. 点击 **+ Add New MCP Server**：
    - **Name**：`ugreen-nas`
    - **Type**：`sse`
-   - **Server URL**：`http://<nas_ip>:8095/sse`
+   - **Server URL**：`http://<nas_ip>:8095/mcp`
    - **Headers**：
      - Key: `Authorization`
      - Value: `Bearer ugreen_mcp_<your_generated_key>`
@@ -37,7 +37,7 @@
 {
   "mcpServers": {
     "ugreen-nas": {
-      "url": "http://<nas_ip>:8095/sse",
+      "url": "http://<nas_ip>:8095/mcp",
       "headers": {
         "Authorization": "Bearer ugreen_mcp_<your_generated_key>"
       }
@@ -57,7 +57,7 @@
 {
   "mcpServers": {
     "ugreen-nas": {
-      "url": "http://<nas_ip>:8095/sse",
+      "url": "http://<nas_ip>:8095/mcp",
       "headers": {
         "Authorization": "Bearer ugreen_mcp_<your_generated_key>"
       }
@@ -78,7 +78,7 @@
 {
   "mcpServers": {
     "ugreen-nas": {
-      "url": "http://<nas_ip>:8095/sse",
+      "url": "http://<nas_ip>:8095/mcp",
       "headers": {
         "Authorization": "Bearer ugreen_mcp_<your_generated_key>"
       }

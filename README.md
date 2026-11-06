@@ -85,7 +85,7 @@ curl -fsSL https://raw.githubusercontent.com/EricFL1998/ugreen-mcp/main/install.
 {
   "mcpServers": {
     "ugreen-nas": {
-      "url": "http://<nas_ip>:8095/sse",
+      "url": "http://<nas_ip>:8095/mcp",
       "headers": {
         "Authorization": "Bearer <your_generated_key>"
       }
@@ -100,7 +100,7 @@ curl -fsSL https://raw.githubusercontent.com/EricFL1998/ugreen-mcp/main/install.
 {
   "mcpServers": {
     "ugreen-nas": {
-      "url": "http://<nas_ip>:8095/sse",
+      "url": "http://<nas_ip>:8095/mcp",
       "headers": {
         "Authorization": "Bearer <your_generated_key>"
       }

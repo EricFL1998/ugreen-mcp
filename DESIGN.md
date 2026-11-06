@@ -184,7 +184,7 @@
   {
     "mcpServers": {
       "ugreen-nas": {
-        "url": "http://<nas_ip>:8095/sse",
+        "url": "http://<nas_ip>:8095/mcp",
         "headers": {
           "Authorization": "Bearer <YOUR_GENERATED_API_KEY>"
         }

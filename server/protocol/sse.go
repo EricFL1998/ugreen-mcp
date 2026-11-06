@@ -154,6 +154,12 @@ func (s *SSEServer) processRequest(ctx context.Context, req *JSONRPCRequest) *JS
 	}
 
 	switch req.Method {
+	case "ping":
+		resp.Result = map[string]interface{}{}
+
+	case "notifications/initialized", "notifications/cancelled", "notifications/progress", "notifications/roots/list_changed":
+		resp.Result = map[string]interface{}{}
+
 	case "initialize":
 		resp.Result = map[string]interface{}{
 			"protocolVersion": "2024-11-05",
