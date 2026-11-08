@@ -34,7 +34,7 @@ TARGET_BIN="/usr/local/bin/ugreen-nas-mcp"
 SERVICE_FILE="/etc/systemd/system/ugreen-nas-mcp.service"
 CONFIG_DIR="/etc/ugreen-nas-mcp"
 LOG_DIR="/var/log/ugreen-nas-mcp"
-RELEASE_URL="https://github.com/EricFL1998/ugreen-mcp/releases/download/v1.0.0/ugreen-nas-mcp-linux-amd64"
+RELEASE_URL="https://github.com/EricFL1998/ugreen-mcp/releases/download/v1.1.0/ugreen-nas-mcp-linux-amd64"
 
 # 3. 创建目录
 mkdir -p "$CONFIG_DIR" "$LOG_DIR"
