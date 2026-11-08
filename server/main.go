@@ -11,6 +11,7 @@ import (
 	"ugreen-nas-mcp/drivers/apps"
 	"ugreen-nas-mcp/drivers/docker"
 	"ugreen-nas-mcp/drivers/files"
+	"ugreen-nas-mcp/drivers/sqlite"
 	"ugreen-nas-mcp/drivers/storage"
 	"ugreen-nas-mcp/drivers/system"
 	"ugreen-nas-mcp/protocol"
@@ -61,6 +62,7 @@ func main() {
 	storage.Register(registry)
 	docker.Register(registry)
 	files.Register(registry)
+	sqlite.Register(registry)
 	apps.Register(registry)
 
 	log.Printf("[INIT] 已成功装载并就绪 %d 个核心 MCP Tools", len(registry.ListTools()))

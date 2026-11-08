@@ -110,7 +110,8 @@ func (g *Guardian) CheckPathSandbox(path string) error {
 
 	allowed := false
 	for _, p := range cfg.AllowedPaths {
-		if strings.HasPrefix(cleanPath, p) {
+		// 用 filepath.Rel 做真实包含判断，避免 "/volume1evil" 这类前缀绕过
+		if withinRoot(cleanPath, filepath.Clean(p)) {
 			allowed = true
 			break
 		}
@@ -128,6 +129,37 @@ func (g *Guardian) CheckPathSandbox(path string) error {
 		}
 	}
 
+	return nil
+}
+
+// withinRoot 判断 path 是否严格落在 root 之内（含 root 自身）
+func withinRoot(path, root string) bool {
+	if path == root {
+		return true
+	}
+	rel, err := filepath.Rel(root, path)
+	if err != nil {
+		return false
+	}
+	return rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator))
+}
+
+// CheckCredentialDeny 阻止通过只读接口读取凭据类文件/目录。
+// 注意：.env 是本次的正当用途，故意不在黑名单内；只禁止私钥、SSH 目录、令牌缓存等。
+func (g *Guardian) CheckCredentialDeny(path string) error {
+	cleanPath := filepath.Clean(path)
+	forbidden := []string{
+		"/.ssh", "/.gnupg", "/.aws", "/.kube",
+		"authorized_keys", "known_hosts", // 公钥清单（其中可能含别名与内网拓扑）
+		"id_rsa", "id_dsa", "id_ecdsa", "id_ed25519", // 私钥
+		".pem", ".key", ".p12", ".pfx", ".keystore", // 证书/密钥容器
+		".docker/config.json", "shadow", "passwd", // 凭据缓存与口令库
+	}
+	for _, seg := range forbidden {
+		if strings.Contains(cleanPath, seg) {
+			return fmt.Errorf("凭据保护拦截：禁止读取私钥/凭据类文件 %s（.env 等业务配置不受此限）", cleanPath)
+		}
+	}
 	return nil
 }
 

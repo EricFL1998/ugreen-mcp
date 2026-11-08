@@ -17,3 +17,10 @@ __pycache__/
 .DS_Store
 Thumbs.db
 
+# Release artifacts & local scratch
+# (v3 binaries live in dist/; never commit them)
+dist/
+*.bak*
+readonly-tools.diff
+v2-*
+v3-*
